@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,3 +256,262 @@
   </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Form Validation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    form {
+      width: 350px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 15px;
+      font-weight: bold;
+      color: #444;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .error {
+      color: red;
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      background: #4CAF50;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    /* Dropdown styles */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .dropdown-btn {
+      padding: 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: #fff;
+      border: 1px solid #ccc;
+      z-index: 1;
+      width: 100%;
+      max-height: 120px;
+      overflow-y: auto;
+      border-radius: 6px;
+      margin-top: 2px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .dropdown-content label {
+      display: block;
+      padding: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .dropdown-content label:hover {
+      background: #f0f0f0;
+    }
+
+    .dropdown.show .dropdown-content {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <form id="myForm">
+    <h2>Form Validation</h2>
+
+    <label>
+      Name:
+      <input type="text" id="name" placeholder="Enter your name">
+      <div id="nameError" class="error"></div>
+    </label>
+
+    <label>
+      Age:
+      <input type="text" id="age" placeholder="Enter your age">
+      <div id="ageError" class="error"></div>
+    </label>
+
+    <label>
+      From Date:
+      <input type="date" id="fromDate">
+      <div id="fromDateError" class="error"></div>
+    </label>
+
+    <label>
+      To Date:
+      <input type="date" id="toDate">
+      <div id="toDateError" class="error"></div>
+    </label>
+
+    <label>
+      Select Option:
+      <div class="dropdown" id="dropdown">
+        <div class="dropdown-btn" id="dropdownBtn">--Select Any Fruits--</div>
+        <div class="dropdown-content">
+          <label><input type="checkbox" value="Apple"> Apple</label>
+          <label><input type="checkbox" value="Orange"> Orange</label>
+          <label><input type="checkbox" value="Grapes"> Grapes</label>
+        </div>
+      </div>
+      <div id="optionError" class="error"></div>
+    </label>
+
+    <button type="submit">Submit</button>
+    <div id="successMsg" style="color: green; margin-top: 10px; font-weight: bold;"></div>
+  </form>
+
+  <script>
+    const dropdown = document.getElementById("dropdown");  //store the dropdown element in a variable
+    const dropdownBtn = document.getElementById("dropdownBtn"); //store the button element in a variable
+    const checkboxes = dropdown.querySelectorAll("input[type='checkbox']"); //store all the checkbox elements in a variable
+                                                    //("input[type='checkbox']") => CSS selector for all <input> elements of type checkbox.
+    // Toggle dropdown
+    dropdownBtn.addEventListener("click", () => {//dropdownBtn is the DOM HTML element , .addEventListener("click", => When the button is clicked, the function inside will be executed.
+      dropdown.classList.toggle("show");  // dropdown is the DOM HTML element, .classList.toggle("show") =>   Toggles the "show" class on the dropdown element.
+    });
+
+    // Update button text when checkboxes change
+    checkboxes.forEach(cb => {  //Loops through each checkbox (cb) and runs the code inside for each one.
+      cb.addEventListener("change", () => {   //Listens for the change event on each checkbox
+        const selected = Array.from(checkboxes) //Convert the NodeList of checkboxes into an array  
+          .filter(i => i.checked)//i represents each individual checkbox element in the array
+          .map(i => i.value);//i means checkbox elements value
+        dropdownBtn.textContent = selected.length ? selected.join(", ") : "--Select--"; //condition ? valueIfTrue : valueIfFalse
+                                                              //Convert array into a string with commas separating each value
+      });//Updates the text inside the dropdown button.
+    });
+
+    // Close dropdown if click outside
+    document.addEventListener("click", (e) => { // e is event object
+      if (!dropdown.contains(e.target)) { //.contains(element)=>Checks if the given element is inside the dropdown
+        dropdown.classList.remove("show");    // removes the "show" class from the dropdown element, hiding the dropdown content.
+      }
+    });
+
+    // Form validation
+    document.getElementById("myForm").addEventListener("submit", function(e) { //e is event object
+      e.preventDefault(); // stop form from submitting stops the default behavior of the event.
+
+      let valid = true;   // assume the form is valid initially
+
+      // clear old errors
+      document.querySelectorAll(".error").forEach(el => el.textContent = ""); // clear previous error messages
+
+      // Name validation (alphabets only)
+      const name = document.getElementById("name").value.trim(); // get the value from the user thorugh input field
+      if (!/^[A-Za-z ]+$/.test(name)) {   //Expression to check if name contains only alphabets and space
+        document.getElementById("nameError").textContent = "Name must contain only letters."; //Error message if validation fails
+        valid = false;  // set valid to false if validation fails
+      }
+
+      // Age validation (2 digits only)
+      const age = document.getElementById("age").value.trim();   // get the value from the user thorugh input field
+      if (!/^\d{2}$/.test(age)) {     //Expression to check if age contains only 2 digits
+        document.getElementById("ageError").textContent = "Age must be 2 digits only.";
+        valid = false;
+      }
+
+      // From Date validation (must be past only)
+      const fromDateInput = document.getElementById("fromDate").value; // get the value is in string format (yyyy-mm-dd)
+      const fromDate = new Date(fromDateInput);      // Object creation (date format into JS object)
+      const today = new Date();   //creates a Date object for the current date and time
+      today.setHours(0,0,0,0);  // Time expression (sets the hours, minutes, seconds, milliseconds to zero.)
+
+      if (!fromDateInput || fromDate >= today) {
+        document.getElementById("fromDateError").textContent = "From Date must be in the past.";  //Error message if validation fails
+        valid = false;    // Show the error message if validation fails
+      }
+
+      // To Date validation (must be after From Date)
+      const toDateInput = document.getElementById("toDate").value;
+      const toDate = new Date(toDateInput);
+      if (!toDateInput || toDate <= fromDate) {
+        document.getElementById("toDateError").textContent = "To Date must be after From Date.";
+        valid = false;
+      }
+
+      // Dropdown (checkbox multiple selection validation)
+      const selected = Array.from(checkboxes)
+        .filter(i => i.checked)// i means each individual checkbox element in the array
+        .map(i => i.value);// i means checkbox elements value
+
+      if (selected.length === 0) {
+        document.getElementById("optionError").textContent = "Please select at least one option.";
+        valid = false;
+      }
+
+      const successMsg = document.getElementById("successMsg"); //store the success message element in a variable
+
+        // clear previous success message
+        successMsg.textContent = "";  // clear previous success message
+
+        if (valid) {
+          successMsg.textContent = "Form submitted successfully!";  // show success message if all validations pass
+        
+        }
+
+    });
+  </script>
+</body>
+</html>
+>>>>>>> 745d74f1772da46ae18a650409b426cb14819933
