@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Form Validation OOP</title>
+  <style>
+    /* Center body */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Form styling */
+    form {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      width: 350px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    .error {
+      color: red;
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    #successMsg {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+      color: green;
+    }
+
+    /* Dropdown styling */
+    .dropdown {
+      position: relative;
+      user-select: none;
+    }
+
+    .dropdown-btn {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #fff;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: #fff;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      border-radius: 5px;
+      width: 100%;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+      z-index: 100;
+      padding: 10px;
+    }
+
+    .dropdown.show .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-content label {
+      display: block;
+      font-weight: normal;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <form id="myForm">
+    <h2>Form Validation</h2>
+
+    <label>
+      Name:
+      <input type="text" id="name" placeholder="Enter your name">
+      <div id="nameError" class="error"></div>
+    </label>
+
+    <label>
+      Age:
+      <input type="text" id="age" placeholder="Enter your age">
+      <div id="ageError" class="error"></div>
+    </label>
+
+    <label>
+      From Date:
+      <input type="date" id="fromDate">
+      <div id="fromDateError" class="error"></div>
+    </label>
+
+    <label>
+      To Date:
+      <input type="date" id="toDate">
+      <div id="toDateError" class="error"></div>
+    </label>
+
+    <label>
+      Select Option:
+      <div class="dropdown" id="dropdown">
+        <div class="dropdown-btn" id="dropdownBtn">--Select Any Fruits--</div>
+        <div class="dropdown-content">
+          <label><input type="checkbox" value="Apple"> Apple</label>
+          <label><input type="checkbox" value="Orange"> Orange</label>
+          <label><input type="checkbox" value="Grapes"> Grapes</label>
+        </div>
+      </div>
+      <div id="optionError" class="error"></div>
+    </label>
+
+    <button type="submit">Submit</button>
+    <div id="successMsg"></div>
+  </form>
+
+  <script>
+    
+    class FormHandler {     //Class creation => Class name -> FormHandler
+      constructor(formId, dropdownId, dropdownBtnId) {  //Constructor function (When the object is created, this function is automatically called) 
+                    //[formId, dropdownId, dropdownBtnId]These are parameters.
+        //this keyword refers to the current object instance of the FormHandler class.       
+        this.form = document.getElementById(formId);    //form is the property of the object.(That stores the form element)
+        this.dropdown = document.getElementById(dropdownId);    //storing the dropdown container element
+        this.dropdownBtn = document.getElementById(dropdownBtnId);  //storing the dropdown button element
+        this.checkboxes = this.dropdown.querySelectorAll("input[type='checkbox']");//("input[type='checkbox']") => CSS selector for all <input> elements of type checkbox.
+        this.successMsg = document.getElementById("successMsg");    //Property to store the success message in div element
+
+        this.addEventListeners();   //run the method immediately after the object is created
+      }
+
+      addEventListeners() {             //Function inside classes
+        // Dropdown toggle
+        this.dropdownBtn.addEventListener("click", () => this.toggleDropdown());    //Property of the Class object
+        //current object instance of the FormHandler class,property of the class
+        
+        this.checkboxes.forEach(cb => { //loop through each checkbox in nodeList ,, cb is a temporary variable.
+          cb.addEventListener("change", () => this.updateDropdownBtn());    // when a checkbox changes, it calls updateDropdownBtn method.
+        });     //change => event trigger when the checkbox is checked or unchecked.
+
+        // Close dropdown if clicked outside
+        document.addEventListener("click", e => {   // e is the event object
+          if (!this.dropdown.contains(e.target)) {  /// click anywhere on the page it will trigger this function.
+                            //.contains() => returns true if the elements is inside , otherwise false.
+            this.dropdown.classList.remove("show"); //removes the show class from the dropdown element.
+          }             //classList is the property of the every HTML element
+        });
+
+        // Form submission
+        this.form.addEventListener("submit", e => this.handleSubmit(e));    //e is the event object
+      }             //arrow function call the handle submit method when the form is submitted.
+
+      toggleDropdown() {            // toogleDropdown is a method 
+        this.dropdown.classList.toggle("show");     //classList give access to all the Css elements.
+      }     //if the elements are already present in the class , if YES-> remove it, if NO-> add it.
+
+      updateDropdownBtn() {
+        const selected = Array.from(this.checkboxes) //NodeList of all checkboxes inside the dropdown
+          .filter(cb => cb.checked)     //Array.from() => converts the NodeList into an array.
+          .map(cb => cb.value);
+        this.dropdownBtn.textContent = selected.length ? selected.join(", ") : "--Select--";//condition ? valueIfTrue : valueIfFalse
+      }                                               //Convert array into a string with commas separating each value
+
+      clearErrors() {
+        this.form.querySelectorAll(".error").forEach(el => el.textContent = "");//.querySelectorAll(".error") → selects all elements inside the form that have the class error.
+        this.successMsg.textContent = "";   //this.successMsg → refers to the success message div stored in the class.
+      } //textContent = "" → clears any previous success message.
+
+      validateName() {      //Methods
+        const name = document.getElementById("name").value.trim();
+        if (!/^[A-Za-z ]+$/.test(name)) {
+          document.getElementById("nameError").textContent = "Name must contain only letters.";
+          return false;
+        }
+        return true;
+      }
+
+      validateAge() {
+        const age = document.getElementById("age").value.trim();
+        if (!/^\d{2}$/.test(age)) {
+          document.getElementById("ageError").textContent = "Age must be 2 digits only.";
+          return false;
+        }
+        return true;
+      }
+
+      validateDates() {
+        const fromDateInput = document.getElementById("fromDate").value;    //// get the value is in string format (yyyy-mm-dd)
+        const toDateInput = document.getElementById("toDate").value;    // get the value is in string format (yyyy-mm-dd)  
+
+        const fromDate = new Date(fromDateInput);////// Object creation (date format into JS object)
+        const toDate = new Date(toDateInput);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); //Hours, minutes, seconds, milliseconds to 0
+
+        let valid = true;
+
+        if (!fromDateInput || fromDate >= today) {
+          document.getElementById("fromDateError").textContent = "From Date must be in the past.";
+          valid = false;
+        }
+
+        if (!toDateInput || toDate <= fromDate) {
+          document.getElementById("toDateError").textContent = "To Date must be after From Date.";
+          valid = false;
+        }
+
+        return valid;       // If all the checks are passed, return true, If all the checks are not passed, return false.
+      }
+
+      validateDropdown() {
+        const selected = Array.from(this.checkboxes)       //Convert nodeList into an array
+          .filter(cb => cb.checked) //Convert nodelist into an array
+          .map(cb => cb.value);
+
+        if (selected.length === 0) {    //selected.length → gives the number of selected checkboxes.
+          document.getElementById("optionError").textContent = "Please select at least one option.";
+          return false;
+        }
+        return true;
+      }
+
+      handleSubmit(e) {     //e is the event object,  this method is called when the form is submitted.
+        e.preventDefault(); //prevent default is a method.
+        this.clearErrors(); //clearErrors() which removes all previous error messages
+
+        const isValid = this.validateName() &&      // isValid is a constant variable
+                        this.validateAge() &&       //methods are called to validate each field.
+                        this.validateDates() &&
+                        this.validateDropdown();
+
+        if (isValid) {
+          this.successMsg.textContent = "Form submitted successfully!";
+        }
+      }
+    }
+
+    // Object creation..    //myForm => formid ,  dropdown => dropdownId, dropdownBtn => dropdownBtnId
+    const formHandler = new FormHandler("myForm", "dropdown", "dropdownBtn");   //Form handler 
+  </script> 
+</body>
+</html>
