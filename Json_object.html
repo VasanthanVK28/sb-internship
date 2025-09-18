@@ -17,11 +17,15 @@
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <style>
+    #main { width: 600px; height: 400px; margin-top: 20px; }
+  </style>
 </head>
 <body>
   <h2>Employee Data with Date Filter</h2>
   <input type="text" id="datePicker" placeholder="Select a start date">
-  <br><br><br><br>
+  <br><br>
 
   <table id="example" class="display" style="width:100%">
     <thead>
@@ -37,10 +41,10 @@
     <tbody></tbody>
   </table>
 
-  <div id="main" style="width:600px; height:400px; margin-top:20px;"></div>
+  <div id="main"></div>
 
   <script>
-    // Table class
+    // ---------------- Table class ----------------
     class Table {
       constructor(selector) {
         this.selector = selector;
@@ -66,7 +70,7 @@
       }
     }
 
-    // Chart class
+    // ---------------- Chart class ----------------
     class EChart {
       constructor(containerId) {
         this.chart = echarts.init(document.getElementById(containerId));
@@ -86,16 +90,12 @@
         this.chart.setOption({
           title: { text: 'Employees per Office', left: 'center' },
           tooltip: { trigger: 'item' },
-          series: [{
-            type: 'pie',
-            radius: '70%',
-            data: seriesData
-          }]
+          series: [{ type: 'pie', radius: '70%', data: seriesData }]
         });
       }
     }
 
-    // Data Manager class
+    // ---------------- Data Manager class ----------------
     class DataManager {
       constructor(url) {
         this.url = url;
@@ -103,64 +103,62 @@
 
       loadData(callback) {
         $.ajax({
-          url: this.url,
+          url: this.url,     // JSON file location
           type: "GET",
           dataType: "json",
-          success: function (json) {
+          success: function(json) {
+            console.log("Data loaded:", json);
             callback(json.data);
           },
-          error: function (xhr, status, error) {
+          error: function(xhr, status, error) {
             console.error("Error loading JSON:", error);
           }
         });
       }
     }
 
-    // Date Filter class
+    // ---------------- Date Filter class ----------------
     class DateFilter {
       constructor(selector, onDateChange) {
         flatpickr(selector, {
           dateFormat: "Y-m-d",
-          onChange: function (selectedDates, dateStr) {
+          onChange: function(selectedDates, dateStr) {
             onDateChange(dateStr);
           }
         });
       }
     }
 
-    // Main App class
+    // ---------------- Main App class ----------------
     class App {
       constructor() {
         this.allData = [];
         this.dataTable = new Table('#example');
         this.eChart = new EChart('main');
-        this.dataManager = new DataManager("data.json");
+        this.dataManager = new DataManager("http://127.0.0.1:5500/js/data.json"); // Updated URL
 
-        // load data
+        // Load JSON data
         this.dataManager.loadData((data) => {
           this.allData = data;
           this.dataTable.init(this.allData);
           this.eChart.update(this.allData);
         });
 
-        // setup filter
+        // Setup date filter
         new DateFilter("#datePicker", (dateStr) => this.filterData(dateStr));
       }
 
       filterData(dateStr) {
-        if (!dateStr) {
-          this.dataTable.init(this.allData);
-          this.eChart.update(this.allData);
-          return;
-        }
+        const filtered = dateStr 
+          ? this.allData.filter(item => item.start_date === dateStr)
+          : this.allData;
 
-        const filtered = this.allData.filter(item => item.start_date === dateStr);
         this.dataTable.init(filtered);
         this.eChart.update(filtered);
       }
     }
 
-    // Run the App
+    // ---------------- Run App ----------------
     $(document).ready(() => {
       new App();
     });
