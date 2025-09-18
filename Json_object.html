@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DataTable + PieChart + Date Filter (OOP)</title>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- DataTables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+
+  <!-- ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body>
+  <h2>Employee Data with Date Filter</h2>
+  <input type="text" id="datePicker" placeholder="Select a start date">
+  <br><br><br><br>
+
+  <table id="example" class="display" style="width:100%">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Office</th>
+        <th>Age</th>
+        <th>Start date</th>
+        <th>Salary</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="main" style="width:600px; height:400px; margin-top:20px;"></div>
+
+  <script>
+    // Table class
+    class Table {
+      constructor(selector) {
+        this.selector = selector;
+        this.table = null;
+      }
+
+      init(data) {
+        if (this.table) {
+          this.table.clear().rows.add(data).draw();
+        } else {
+          this.table = $(this.selector).DataTable({
+            data: data,
+            columns: [
+              { data: "name" },
+              { data: "position" },
+              { data: "office" },
+              { data: "age" },
+              { data: "start_date" },
+              { data: "salary" }
+            ]
+          });
+        }
+      }
+    }
+
+    // Chart class
+    class EChart {
+      constructor(containerId) {
+        this.chart = echarts.init(document.getElementById(containerId));
+      }
+
+      update(data) {
+        const officeCount = {};
+        data.forEach(item => {
+          officeCount[item.office] = (officeCount[item.office] || 0) + 1;
+        });
+
+        const seriesData = Object.keys(officeCount).map(key => ({
+          name: key,
+          value: officeCount[key]
+        }));
+
+        this.chart.setOption({
+          title: { text: 'Employees per Office', left: 'center' },
+          tooltip: { trigger: 'item' },
+          series: [{
+            type: 'pie',
+            radius: '70%',
+            data: seriesData
+          }]
+        });
+      }
+    }
+
+    // Data Manager class
+    class DataManager {
+      constructor(url) {
+        this.url = url;
+      }
+
+      loadData(callback) {
+        $.ajax({
+          url: this.url,
+          type: "GET",
+          dataType: "json",
+          success: function (json) {
+            callback(json.data);
+          },
+          error: function (xhr, status, error) {
+            console.error("Error loading JSON:", error);
+          }
+        });
+      }
+    }
+
+    // Date Filter class
+    class DateFilter {
+      constructor(selector, onDateChange) {
+        flatpickr(selector, {
+          dateFormat: "Y-m-d",
+          onChange: function (selectedDates, dateStr) {
+            onDateChange(dateStr);
+          }
+        });
+      }
+    }
+
+    // Main App class
+    class App {
+      constructor() {
+        this.allData = [];
+        this.dataTable = new Table('#example');
+        this.eChart = new EChart('main');
+        this.dataManager = new DataManager("data.json");
+
+        // load data
+        this.dataManager.loadData((data) => {
+          this.allData = data;
+          this.dataTable.init(this.allData);
+          this.eChart.update(this.allData);
+        });
+
+        // setup filter
+        new DateFilter("#datePicker", (dateStr) => this.filterData(dateStr));
+      }
+
+      filterData(dateStr) {
+        if (!dateStr) {
+          this.dataTable.init(this.allData);
+          this.eChart.update(this.allData);
+          return;
+        }
+
+        const filtered = this.allData.filter(item => item.start_date === dateStr);
+        this.dataTable.init(filtered);
+        this.eChart.update(filtered);
+      }
+    }
+
+    // Run the App
+    $(document).ready(() => {
+      new App();
+    });
+  </script>
+</body>
+</html>
